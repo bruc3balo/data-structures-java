@@ -46,7 +46,7 @@ public class MinInRotatedArray {
                 min = Math.min(min, Math.min(leftInBoundValue, leftOutBoundValue));
                 rightIndex = leftOutBoundIndex;
             } else {
-                //ruse right side
+                //use right side
                 min = Math.min(min, Math.min(rightInBoundValue, rightOutBoundValue));
                 leftIndex = rightInBoundIndex;
             }
