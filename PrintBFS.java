@@ -21,7 +21,7 @@ class PrintBFS {
         System.out.println(result);
     }
 
-    private static List<List<Integer>> result = new ArrayList<>();
+    private static final List<List<Integer>> result = new ArrayList<>();
 
     private static List<List<Integer>> levelOrder(TreeNode root) {
         if (root != null) {

@@ -2,13 +2,17 @@
 public class TargetInSortedArray {
 
     public static void main(String[] args) {
-        int[] nums = new int[]{3, 4, 5, 6, 1, 2};
-        int target = 1;
+//        int[] nums = new int[]{3, 4, 5, 6, 1, 2};
+//        int target = 1;
         //output = 4
 
 //        int[] nums = new int[]{3, 5, 6, 0, 1, 2};
 //        int target = 4;
         //output = -1
+
+        int[] nums = new int[]{1, 3};
+        int target = 3;
+        //output 1
 
 
         int result = search(nums, target);
@@ -45,18 +49,12 @@ public class TargetInSortedArray {
             int rightOutBoundValue = nums[rightOutBoundIndex];
 
             //TODO: search between 2 arrays
-            if (leftInBoundValue <= target || leftOutBoundValue <= target) {
-                //left side
-                if (leftInBoundValue == target) return leftInBoundIndex;
-                else if (leftOutBoundValue == target) return leftOutBoundIndex;
-                else rightIndex = leftInBoundIndex;
-
-            } else {
-                if(rightInBoundValue == target) return rightInBoundIndex;
-                else if (rightOutBoundValue == target) return rightOutBoundIndex;
-                leftIndex = rightInBoundIndex;
-            }
-
+            if (leftInBoundValue == target) return leftInBoundIndex;
+            else if (leftOutBoundValue == target) return leftOutBoundIndex;
+            else if (rightInBoundValue == target) return rightInBoundIndex;
+            else if (rightOutBoundValue == target) return rightOutBoundIndex;
+            else if (leftInBoundValue < target || leftOutBoundValue < target) rightIndex = leftInBoundIndex;
+            else leftIndex = rightInBoundIndex;
         }
 
 

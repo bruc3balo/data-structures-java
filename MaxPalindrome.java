@@ -69,4 +69,5 @@ public class MaxPalindrome {
         if (s.length() != length) return false;
         return s.charAt(0) == s.charAt(length - 1);
     }
+
 }
