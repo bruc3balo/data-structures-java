@@ -60,9 +60,14 @@ class RottingOranges {
     }
 
     private static boolean minute(int i, int j, int[][] g) {
+        //Bound check
         if (i < 0 || i == g.length) return false;
         if (j < 0 || j == g[0].length) return false;
+
+        //Infect check
         if (g[i][j] == empty) return false;
+
+
         if (g[i][j] == fresh) {
             g[i][j] = rotten;
             --freshF;
@@ -75,13 +80,19 @@ class RottingOranges {
         boolean bottom = false;
         boolean top = false;
 
+        //Can infect left?
         if (j - 1 >= 0 && g[i][j - 1] == fresh) left = minute(i, j - 1, g);
+
+        //Can infect right?
         if (j + 1 < g[0].length && g[i][j + 1] == fresh) right = minute(i, j + 1, g);
+
+        //Can infect bottom?
         if (i + 1 < g.length && g[i + 1][j] == fresh) bottom = minute(i + 1, j, g);
+
+        //Can infect top?
         if (i - 1 >= 0 && g[i - 1][j] == fresh) top = minute(i - 1, j, g);
 
         //return left || right || bottom || top;
-
         return right || left || bottom || top;
 
     }
