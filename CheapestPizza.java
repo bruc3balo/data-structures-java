@@ -73,6 +73,7 @@ public class CheapestPizza {
     }
 
     public static int solution(Pizza[] menu, OrderItem[] order) {
+
         //cache pizza names
         Map<String, Pizza> pizzaMap = Arrays.stream(menu).collect(Collectors.toMap(p -> p.name, Function.identity()));
         List<OrderItem> allOrders = Arrays.stream(order)
@@ -85,6 +86,7 @@ public class CheapestPizza {
 
         //find total price without discount
         int noDiscountCost = noDiscountCost(pizzaMap, allOrders);
+
         int buy3CheapestIsFreeCost = buy3CheapestIsFree(pizzaMap, allOrders, noDiscountCost);
         int buy5For100Cost = buy5For100(pizzaMap, allOrders, noDiscountCost);
         int forEveryLargeSmallIsFreeCost = forEveryLargeSmallIsFree(pizzaMap, allOrders);
