@@ -130,4 +130,80 @@ class RottingOranges {
         }
         return fresh == 0 ? count : -1;
     }
+
+    public static int orangesRottingAce(int[][] grid) {
+        int minutes = 0;
+        Queue<int[]> minuteBatchQueue = new LinkedList<>();
+
+
+        // Find all rotten oranges first O(m.n) time, O(m.n) space
+        Queue<int[]> rottenOrangesQ = new LinkedList<>();
+        for (int row = 0; row < grid.length; row++) {
+            for (int column = 0; column < grid[row].length; column++) {
+                int orange = grid[row][column];
+
+                //Add if rotten
+                if (orange == 2) rottenOrangesQ.offer(new int[]{row, column});
+            }
+        }
+
+        // Begin infecting other oranges from each of the rotten oranges i.e. Each infection is counted as a minute O(1) time, O(1) space
+        boolean hasInfected = false;
+        while (!rottenOrangesQ.isEmpty()) {
+
+
+            //Infect
+            int[] rottenCellIndex = rottenOrangesQ.poll();
+            int row = rottenCellIndex[0];
+            int column = rottenCellIndex[1];
+
+
+            // TopCell
+            if (row > 0 && grid[row - 1][column] == 1) {
+                grid[row - 1][column] = 2;
+                minuteBatchQueue.add(new int[]{row - 1, column});
+                hasInfected = true;
+            }
+
+            // BottomCell
+            if (row < grid.length - 1 && grid[row + 1][column] == 1) {
+                grid[row + 1][column] = 2;
+                minuteBatchQueue.add(new int[]{row + 1, column});
+                hasInfected = true;
+            }
+
+            // LeftCell
+            if (column > 0 && grid[row][column - 1] == 1) {
+                grid[row][column - 1] = 2;
+                minuteBatchQueue.add(new int[]{row, column - 1});
+                hasInfected = true;
+            }
+
+            // RightCell
+            if (column < grid[row].length - 1 && grid[row][column + 1] == 1) {
+                grid[row][column + 1] = 2;
+                minuteBatchQueue.add(new int[]{row, column + 1});
+                hasInfected = true;
+            }
+
+            if (rottenOrangesQ.isEmpty()) {
+                if (hasInfected) minutes++;
+                while (!minuteBatchQueue.isEmpty()) rottenOrangesQ.offer(minuteBatchQueue.poll());
+                hasInfected = false;
+            }
+
+        }
+
+        for (int row = 0; row < grid.length; row++) {
+            for (int column = 0; column < grid[row].length; column++) {
+                int orange = grid[row][column];
+
+                //invalidate if any fresh
+                if (orange == 1) return -1;
+            }
+        }
+
+        return minutes;
+
+    }
 }

@@ -45,6 +45,7 @@ class SerDesr {
 
         //L
         inOrder(node.left);
+
         //N
         List<Integer> l = b.getOrDefault(in, new ArrayList<>());
         l.add(node.getValue());

@@ -1,7 +1,7 @@
 import java.util.*;
 
 //graphs
-class Graph {
+public class Graph {
 
     //Adjacency list implementation
     //undirected graph
@@ -16,8 +16,7 @@ class Graph {
 
     public boolean addVertex(String name, int id) {
         if (doesVertexIdExist(id)) return false;
-        vertices.put(id, new Vertex(id, name));
-        return true;
+        return addVertex(new Vertex(id, name));
     }
 
 
@@ -110,16 +109,24 @@ class Graph {
             v = toProcess.poll();
 
             if (!processed.contains(v.id)) {
-                processed.add(v.id);
+
+                //Process
                 System.out.println(v.id);
+
+                //Processed
+                processed.add(v.id);
+
+
             }
 
             for (Map.Entry<Integer, Edge> edgeEntry : v.getEdgeList().entrySet()) {
                 Edge edge = edgeEntry.getValue();
-                Optional<Vertex> vertex = getVertex(edge.destinationVertexId);
-                if (vertex.isPresent() && !processed.contains(vertex.get().id)) {
-                    toProcess.offer(vertex.get());
-                }
+
+                //Skip already processed
+                if (processed.contains(edge.destinationVertexId)) return;
+
+                //Add Neighbor to process queue
+                getVertex(edge.destinationVertexId).ifPresent(toProcess::offer);
             }
 
         }
@@ -130,14 +137,22 @@ class Graph {
         bfsRecursion(v, seen);
     }
 
-    public void bfsRecursion(Vertex v, HashSet<Integer> seen) {
-        if (v == null || seen.contains(v.id)) return; //base case
+    public void bfsRecursion(Vertex v, HashSet<Integer> processed) {
+        if (v == null || processed.contains(v.id)) return; //base case
 
-        seen.add(v.id);
+        //Process
         System.out.println(v.id);
 
+        //Processed
+        processed.add(v.id);
+
         for (Map.Entry<Integer, Edge> edgeEntry : v.getEdgeList().entrySet()) {
-            bfsRecursion(getVertex(edgeEntry.getValue().getDestinationVertexId()).orElse(null), seen);
+
+            //Find neighbour
+            Vertex neighbour = getVertex(edgeEntry.getValue().getDestinationVertexId()).orElse(null);
+
+            //Add to stack
+            bfsRecursion(neighbour, processed);
         }
 
     }
@@ -145,28 +160,32 @@ class Graph {
     public void dfsProcess(Vertex v) {
         if (v == null) return;
         if (vertices.isEmpty()) return;
+
         Stack<Vertex> toProcess = new Stack<>();
-        HashSet<Integer> visited = new HashSet<>();
+        HashSet<Integer> processed = new HashSet<>();
+
 
         toProcess.push(v);
-        System.out.println(v.id);
-
 
         while (!toProcess.isEmpty()) {
             v = toProcess.pop();
 
-            if (!visited.contains(v.id)) {
-                visited.add(v.id);
+            if (!processed.contains(v.id)) {
+
+                //It's processed when all neighbours have been processed
+                processed.add(v.id);
+
                 System.out.println(v.id);
             }
 
             for (Map.Entry<Integer, Edge> edgeEntry : v.getEdgeList().entrySet()) {
                 Edge edge = edgeEntry.getValue();
-                Optional<Vertex> vertex = getVertex(edge.destinationVertexId);
-                if (!visited.contains(edge.destinationVertexId) && vertex.isPresent()) {
-                    toProcess.push(vertex.get());
-                    //break;
-                }
+
+                //Only unvisited vertices
+                if (processed.contains(edge.destinationVertexId)) continue;
+
+                //Add neighbour to process stack
+                getVertex(edge.destinationVertexId).ifPresent(toProcess::push);
             }
         }
 
@@ -177,18 +196,24 @@ class Graph {
         dfsRecursion(v, seen);
     }
 
-    public void dfsRecursion(Vertex v, HashSet<Integer> seen) {
-        if (v == null || seen.contains(v.id)) return; //base case
+    public void dfsRecursion(Vertex v, HashSet<Integer> processed) {
+        if (v == null || processed.contains(v.id)) return; //base case
 
-        seen.add(v.id);
+        //Process after all neighbours are visited
+        processed.add(v.id);
 
-
+        //Follow all neighbour's of vertex v
         for (Map.Entry<Integer, Edge> edgeEntry : v.getEdgeList().entrySet()) {
-            dfsRecursion(getVertex(edgeEntry.getValue().getDestinationVertexId()).orElse(null), seen);
+
+            //Find neighbour
+            Vertex neighbour = getVertex(edgeEntry.getValue().getDestinationVertexId()).orElse(null);
+
+            //Add to stack
+            dfsRecursion(neighbour, processed);
         }
 
+        //Process
         System.out.println(v.id);
-
     }
 
     public Optional<Vertex> getVertex(int id) {
@@ -224,7 +249,7 @@ class Graph {
         }
     }
 
-    static class Edge {
+    public static class Edge {
 
         private int destinationVertexId;
         private int weight;
@@ -259,7 +284,7 @@ class Graph {
         }
     }
 
-    static class Vertex {
+    public static class Vertex {
         private int id;
         private String name;
         private final HashMap<Integer, Edge> edgeList = new HashMap<>();
