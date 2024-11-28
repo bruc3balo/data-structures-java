@@ -1,5 +1,5 @@
 //Trees
-class TreeNode {
+public class TreeNode {
 
     private int value;
     TreeNode left;

@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 class ThreeSum {
@@ -23,9 +20,15 @@ class ThreeSum {
         start = System.currentTimeMillis();
         System.out.println("\n Expected output is " + threeSumTwoSum(nums));
         System.out.println("Time taken is " + (System.currentTimeMillis() - start) + " ms");
+
+
     }
 
     public static List<List<Integer>> threeSumTwoSum(int[] nums) {
+
+
+
+
         HashSet<List<Integer>> tripletsFound = new HashSet<>();
         Arrays.sort(nums);
         HashSet<List<Integer>> foundForA = new HashSet<>();
