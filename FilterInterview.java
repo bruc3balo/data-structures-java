@@ -3,7 +3,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 
-class Interview {
+class FilterInterview {
     public static void main(String[] args) {
 
         var it = new FilterIterator<>(Arrays.stream(new int[]{1, 2, 3, 4, 5}).iterator(), x -> x > 3);
@@ -50,7 +50,5 @@ class Interview {
             return temp;
         }
 
-        public static void sayHi() {
-        }
     }
 }

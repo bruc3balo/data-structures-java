@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 class GoodNodes {
+
     public static void main(String[] args) {
         MyTree tree = new MyTree(new TreeNode(3));
         tree.insert(2);
@@ -19,8 +20,8 @@ class GoodNodes {
     }
 
 
-    private static HashMap<TreeNode, List<Integer>> path = new HashMap<>();
-    private static List<Integer> previous = new ArrayList<>();
+    private static final HashMap<TreeNode, List<Integer>> path = new HashMap<>();
+    private static final List<Integer> previous = new ArrayList<>();
 
     private static int goodNodes(TreeNode root) {
         int count = 0;

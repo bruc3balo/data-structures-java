@@ -1,105 +1,157 @@
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class DijkstrasAlgorithm {
 
-
-
     public static void main(String[] args) {
-
+        shortestPathFromSource(exampleGraph(), "A");
     }
 
+    private static class Graph {
+        public Map<String, Vertex> vertices;
 
-    public static void printGraph(Graph g, Graph.Vertex start) {
-        ///GOAL: From start point, find the shortest distances to every other vertex
-
-        final HashSet<Graph.Vertex> completedVertices = new HashSet<>();
-        final Map<Graph.Vertex, Graph.Vertex> cheapestPath = new HashMap<>();
-        final Map<Graph.Vertex, Integer> pathCost = new HashMap<>();
-
-        ///Step 1: Initialize distances, start will be 0, all others will be infinity
-        for (Graph.Vertex v : g.getVertices().values()) {
-
-            //Cheapest path is unknown
-            cheapestPath.put(v, null);
-
-            boolean isStart = v.equals(start);
-
-            //Best cost to same point is 0. Best cost to other point is unknown
-            Integer bestCost = isStart ? 0 : null;
-            pathCost.put(v, bestCost);
+        public Graph(Map<String, Vertex> vertices) {
+            this.vertices = vertices;
         }
+    }
 
-        final Queue<Graph.Vertex> toProcessQueue = new PriorityQueue<>(
-                Comparator.comparingInt(v -> v.getEdgeList().values().stream().mapToInt(Graph.Edge::getWeight).min().orElse(Integer.MAX_VALUE))
+    private static class Vertex {
+        public String id;
+        public List<Edge> edges;
+
+        public Vertex(String id, List<Edge> edges) {
+            this.id = id;
+            this.edges = edges;
+        }
+    }
+
+    private static class Edge {
+        public int weight;
+        public String from;
+        public String to;
+
+        public Edge(int weight, String from, String to) {
+            this.weight = weight;
+            this.from = from;
+            this.to = to;
+        }
+    }
+
+    private static Graph exampleGraph() {
+        final List<Vertex> vertices = new ArrayList<>();
+        vertices.add(
+                new Vertex(
+                        "A",
+                        List.of(
+                                new Edge(2, "A", "B"),
+                                new Edge(8, "A", "D")
+                        )
+                )
+        );
+        vertices.add(
+                new Vertex(
+                        "B",
+                        List.of(
+                                new Edge(2, "B", "A"),
+                                new Edge(6, "B", "E"),
+                                new Edge(5, "B", "D")
+                        )
+                )
+        );
+        vertices.add(
+                new Vertex(
+                        "C",
+                        List.of(
+                                new Edge(3, "C", "F"),
+                                new Edge(9, "C", "E")
+                        )
+                )
+        );
+        vertices.add(
+                new Vertex(
+                        "D",
+                        List.of(
+                                new Edge(8, "D", "A"),
+                                new Edge(5, "D", "B"),
+                                new Edge(3, "D", "E"),
+                                new Edge(2, "D", "F")
+                        )
+                )
+        );
+        vertices.add(
+                new Vertex(
+                        "E",
+                        List.of(
+                                new Edge(6, "E", "B"),
+                                new Edge(3, "E", "D"),
+                                new Edge(1, "E", "F"),
+                                new Edge(9, "E", "C")
+                        )
+                )
+        );
+        vertices.add(
+                new Vertex(
+                        "F",
+                        List.of(
+                                new Edge(2, "F", "D"),
+                                new Edge(1, "F", "E"),
+                                new Edge(3, "F", "C")
+                        )
+                )
         );
 
-        ///Step 2: From each vertex not completed, starting from the start, visit all neighbours (BFS) with priority of the least weight
-        ///and record shortest distances to the vertices and record how to get there i.e. previous vertex
+        Map<String, Vertex> vertexMap = vertices.stream().collect(Collectors.toMap((a) -> a.id, Function.identity()));
 
-        toProcessQueue.add(start);
-        while (!toProcessQueue.isEmpty()) {
-            final Graph.Vertex sourceVertex = toProcessQueue.poll();
+        return new Graph(vertexMap);
+    }
 
-            for (Graph.Edge neighbour : sourceVertex.getEdgeList().values()) {
+    private static void shortestPathFromSource(Graph graph, String source) {
 
-                //Find destination
-                Optional<Graph.Vertex> destinationVertexOptional = g.getVertex(neighbour.getDestinationVertexId());
-                if (destinationVertexOptional.isEmpty()) continue;
-                Graph.Vertex destinationVertex = destinationVertexOptional.get();
+        class Path {
+            public String destinationVertexId;
+            public String sourceVertexId;
+            public int totalWeightToDestination;
 
-                //Record shortest distance to destination
-                Integer edgeWeight = neighbour.getWeight();
-                Integer knownDistance = currentDistance(sourceVertex, destinationVertex, cheapestPath);
-                if(knownDistance == null) {
-                    cheapestPath.put(destinationVertex, sourceVertex);
-                    pathCost.put(destinationVertex, edgeWeight);
-                }
+            public Path(String destinationVertexId, String sourceVertexId, int totalWeightToDestination) {
+                this.destinationVertexId = destinationVertexId;
+                this.sourceVertexId = sourceVertexId;
+                this.totalWeightToDestination = totalWeightToDestination;
+            }
+        }
 
-                if(knownDistance != null) {
-                    Integer knownShortestPath = pathCost.get(destinationVertex);
-                    if(knownShortestPath == null) {
-                        pathCost.put(destinationVertex, edgeWeight);
-                    } else {
-                        pathCost.put(destinationVertex, Math.min(knownShortestPath, knownDistance) + edgeWeight);
-                    }
-                }
-                Integer tentativeDistance = knownDistance == null ? 0 : knownDistance + edgeWeight;
-                
+        //Use a PQ of weights from vertices with the priority of lowest weight
+        PriorityQueue<Vertex> queue = new PriorityQueue<>(
+                Comparator.comparingInt(
+                        a -> a.edges.stream().map(b -> b.weight).min(Comparator.naturalOrder()).orElse(1)
+                )
+        );
 
+        //Record lowest known distance to that vertex
+        HashMap<String, Path> distances = new HashMap<>();
+        //initialize distances
+        graph.vertices.forEach((k, v) -> distances.put(k, new Path(k, null, Integer.MAX_VALUE)));
 
-                //Ensure not completed
-                boolean completed = completedVertices.contains(destinationVertex);
-                if (!completed) toProcessQueue.offer(destinationVertex);
+        //Do not repeat finished vertices
+        HashSet<String> visited = new HashSet<>();
+
+        //Get source
+        Vertex sourceVertex = graph.vertices.get(source);
+        queue.add(sourceVertex);
+
+        //BFS
+        while (!queue.isEmpty()) {
+            Vertex currentVertex = queue.poll();
+
+            Path path = distances.get(currentVertex.id);
+            if(path.totalWeightToDestination == Integer.MAX_VALUE) {
+                visited.add(currentVertex.id);
             }
 
-            completedVertices.add(sourceVertex);
+
         }
 
 
-        // N/B: A vertex is completed when all it's neighbours has been visited
-
-        ///Step 3: Draw a graph of all edges and nodes from start to all destinations
-
     }
 
-
-    // A -> B -> C -> D
-    public static Integer currentDistance(Graph.Vertex origin, Graph.Vertex current, Map<Graph.Vertex, Graph.Vertex> cheapestPath) {
-        int distance = 0;
-        Graph.Vertex source = current;
-        while (source != origin) {
-            Graph.Vertex destination = cheapestPath.get(current);
-            if(source == null) return null;
-
-            Optional<Graph.Edge> optionalEdge = source.getEdge(destination.getId());
-            if (optionalEdge.isEmpty()) return null;
-
-            Graph.Edge edge = optionalEdge.get();
-            distance += edge.getWeight();
-
-            source = destination;
-        }
-
-        return distance;
-    }
 }
