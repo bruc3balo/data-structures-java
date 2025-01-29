@@ -33,7 +33,6 @@ public class NewYearChaos {
                 return;
             }
 
-
             bribes += difference;
         }
 
