@@ -23,12 +23,12 @@ public class SherlockAndValidString {
 
         if(frequencyCounterMap.size() == 1) return "YES";
 
-        //Check if can use remove
+        //Check if you can use remove
         if(frequencyCounterMap.size() > 2) return "NO";
 
-        //try use remove
+        //try to use remove
         boolean usedRemove = false;
-        List<Integer> f = frequencyCounterMap.values().stream().collect(Collectors.toList());
+        List<Integer> f = frequencyCounterMap.values().stream().toList();
 
         if(f.get(0) > 1 && f.get(1) > 1) return "NO";
 
