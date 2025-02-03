@@ -196,7 +196,7 @@ class Sort {
         int[] leftArray = new int[middle];
         int[] rightArray = new int[length - leftArray.length];
 
-        //split the arrays
+        //split & fill the arrays
         int right = 0;
         for (int left = 0; left < length; left++) {
             if (left < middle) {
@@ -209,11 +209,11 @@ class Sort {
         }
 
         //recurse left
-        //Divide left
+        //Divide
         mergeSort(leftArray);
 
         //recurse right
-        //Divide right
+        //Divide
         mergeSort(rightArray);
 
         //Step 2: merge & sort left and right arrays
