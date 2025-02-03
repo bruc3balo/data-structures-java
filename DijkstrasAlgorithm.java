@@ -1,157 +1,89 @@
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class DijkstrasAlgorithm {
 
     public static void main(String[] args) {
-        shortestPathFromSource(exampleGraph(), "A");
-    }
+        int n = 5; // Number of vertices
+        Map<Integer, List<Node>> graph = new HashMap<>();
 
-    private static class Graph {
-        public Map<String, Vertex> vertices;
+        // Adding edges
+        graph.computeIfAbsent(1, k -> new ArrayList<>()).add(new Node(2, 2));
+        graph.computeIfAbsent(1, k -> new ArrayList<>()).add(new Node(3, 4));
+        graph.computeIfAbsent(2, k -> new ArrayList<>()).add(new Node(3, 1));
+        graph.computeIfAbsent(2, k -> new ArrayList<>()).add(new Node(4, 7));
+        graph.computeIfAbsent(3, k -> new ArrayList<>()).add(new Node(5, 3));
+        graph.computeIfAbsent(4, k -> new ArrayList<>()).add(new Node(5, 1));
 
-        public Graph(Map<String, Vertex> vertices) {
-            this.vertices = vertices;
+        int startNode = 1;
+        int[] shortestDistances = dijkstra(n, graph, startNode);
+
+        // Print distances
+        for (int i = 1; i <= n; i++) {
+            System.out.println(
+                    "Shortest distance from " + startNode + " to " + i + " is " +
+                            (shortestDistances[i] == Integer.MAX_VALUE ? "∞" : shortestDistances[i])
+            );
         }
     }
 
-    private static class Vertex {
-        public String id;
-        public List<Edge> edges;
+    private static class Node implements Comparable<Node> {
+        int vertexId, weight;
 
-        public Vertex(String id, List<Edge> edges) {
-            this.id = id;
-            this.edges = edges;
-        }
-    }
-
-    private static class Edge {
-        public int weight;
-        public String from;
-        public String to;
-
-        public Edge(int weight, String from, String to) {
+        Node(int vertexId, int weight) {
+            this.vertexId = vertexId;
             this.weight = weight;
-            this.from = from;
-            this.to = to;
         }
+
+        @Override
+        public int compareTo(Node other) {
+            return Integer.compare(this.weight, other.weight);
+        }
+
     }
 
-    private static Graph exampleGraph() {
-        final List<Vertex> vertices = new ArrayList<>();
-        vertices.add(
-                new Vertex(
-                        "A",
-                        List.of(
-                                new Edge(2, "A", "B"),
-                                new Edge(8, "A", "D")
-                        )
-                )
-        );
-        vertices.add(
-                new Vertex(
-                        "B",
-                        List.of(
-                                new Edge(2, "B", "A"),
-                                new Edge(6, "B", "E"),
-                                new Edge(5, "B", "D")
-                        )
-                )
-        );
-        vertices.add(
-                new Vertex(
-                        "C",
-                        List.of(
-                                new Edge(3, "C", "F"),
-                                new Edge(9, "C", "E")
-                        )
-                )
-        );
-        vertices.add(
-                new Vertex(
-                        "D",
-                        List.of(
-                                new Edge(8, "D", "A"),
-                                new Edge(5, "D", "B"),
-                                new Edge(3, "D", "E"),
-                                new Edge(2, "D", "F")
-                        )
-                )
-        );
-        vertices.add(
-                new Vertex(
-                        "E",
-                        List.of(
-                                new Edge(6, "E", "B"),
-                                new Edge(3, "E", "D"),
-                                new Edge(1, "E", "F"),
-                                new Edge(9, "E", "C")
-                        )
-                )
-        );
-        vertices.add(
-                new Vertex(
-                        "F",
-                        List.of(
-                                new Edge(2, "F", "D"),
-                                new Edge(1, "F", "E"),
-                                new Edge(3, "F", "C")
-                        )
-                )
-        );
+    private static int[] dijkstra(int n, Map<Integer, List<Node>> graph, int startVertexId) {
 
-        Map<String, Vertex> vertexMap = vertices.stream().collect(Collectors.toMap((a) -> a.id, Function.identity()));
+        //Create an array with distances
+        int[] dist = new int[n + 1];
 
-        return new Graph(vertexMap);
-    }
+        //Fill array with +infinity
+        Arrays.fill(dist, Integer.MAX_VALUE);
 
-    private static void shortestPathFromSource(Graph graph, String source) {
+        //Initial distance from source is always 0
+        dist[startVertexId] = 0;
 
-        class Path {
-            public String destinationVertexId;
-            public String sourceVertexId;
-            public int totalWeightToDestination;
+        //Use a minHeap to order by least distance
+        //Use a queue to traverse Breath First Search
+        //i.e. Best First Search
+        PriorityQueue<Node> minHeap = new PriorityQueue<>();
 
-            public Path(String destinationVertexId, String sourceVertexId, int totalWeightToDestination) {
-                this.destinationVertexId = destinationVertexId;
-                this.sourceVertexId = sourceVertexId;
-                this.totalWeightToDestination = totalWeightToDestination;
+        //Start traversing from the source
+        minHeap.add(new Node(startVertexId, 0));
+
+        while (!minHeap.isEmpty()) {
+            Node current = minHeap.poll();
+            int currentVertexId = current.vertexId;
+
+            // Traverse neighbors to find unexplored distances
+            for (Node neighbor : graph.getOrDefault(currentVertexId, Collections.emptyList())) {
+
+                int neighbourVertexId = neighbor.vertexId;
+                int neighbourWeight = neighbor.weight;
+
+                int distanceToCurrent = dist[currentVertexId];
+                int distanceToNeighborFromCurrent = distanceToCurrent + neighbourWeight;
+                int currentDistanceToNeighbour = dist[neighbourVertexId];
+
+                //If found a cheaper path / distance to current, update distance table
+                if (distanceToNeighborFromCurrent < currentDistanceToNeighbour) {
+                    dist[neighbourVertexId] = distanceToNeighborFromCurrent;
+                    minHeap.add(new Node(neighbourVertexId, distanceToNeighborFromCurrent));
+                }
+
             }
         }
 
-        //Use a PQ of weights from vertices with the priority of lowest weight
-        PriorityQueue<Vertex> queue = new PriorityQueue<>(
-                Comparator.comparingInt(
-                        a -> a.edges.stream().map(b -> b.weight).min(Comparator.naturalOrder()).orElse(1)
-                )
-        );
-
-        //Record lowest known distance to that vertex
-        HashMap<String, Path> distances = new HashMap<>();
-        //initialize distances
-        graph.vertices.forEach((k, v) -> distances.put(k, new Path(k, null, Integer.MAX_VALUE)));
-
-        //Do not repeat finished vertices
-        HashSet<String> visited = new HashSet<>();
-
-        //Get source
-        Vertex sourceVertex = graph.vertices.get(source);
-        queue.add(sourceVertex);
-
-        //BFS
-        while (!queue.isEmpty()) {
-            Vertex currentVertex = queue.poll();
-
-            Path path = distances.get(currentVertex.id);
-            if(path.totalWeightToDestination == Integer.MAX_VALUE) {
-                visited.add(currentVertex.id);
-            }
-
-
-        }
-
-
+        return dist;
     }
 
 }
