@@ -3,27 +3,96 @@ import java.util.*;
 public class LargestRectangleInAxis {
     public static void main(String[] args) {
         Point[] points = new Point[]{
-                new Point(2, 1),
-                new Point(8, 1),
-                new Point(2, 4),
-                new Point(8, 4),
-                new Point(-8, 1),
-                new Point(-2, -2),
-                new Point(-8, -2),
-                new Point(-2, 8),
-                new Point(3, 3),
-                new Point(-7, 3),
-                new Point(-2, -2),
-                new Point(2, 6),
-                new Point(-6, 0),
+                new Point(2, 1), //A
+                new Point(8, 1), //B
+                new Point(2, 4), //C
+                new Point(8, 4), //D
+                new Point(-8, 1), //E
+                new Point(2, -2), //F
+                new Point(-8, -2), //G
+                new Point(-2, 8), //H
+                new Point(3, 3), //I
+                new Point(-7, 3), //J
+                new Point(-2, -2), //K
+                new Point(2, 6), //L
+                new Point(-6, 0), //M
         };
 
         int result = findRectWithMaxArea(points);
         System.out.println(result);
     }
 
-
     static int findRectWithMaxArea(Point[] points) {
+
+        int maxArea = 0;
+
+        //Rules
+        HashMap<String, Map<Integer, List<Point>>> map = new HashMap<>();
+
+        //2 points on same y, 2 points on same x
+        for (Point p : points) {
+
+            Map<Integer, List<Point>> xPoints = map.getOrDefault("x", new HashMap<>());
+            List<Point> pXPoints = xPoints.getOrDefault(p.x, new ArrayList<>());
+            pXPoints.add(p);
+            xPoints.put(p.x, pXPoints);
+            map.put("x", xPoints);
+
+            Map<Integer, List<Point>> yPoints = map.getOrDefault("y", new HashMap<>());
+            List<Point> pYPoints = yPoints.getOrDefault(p.y, new ArrayList<>());
+            pYPoints.add(p);
+            yPoints.put(p.y, pYPoints);
+            map.put("y", yPoints);
+
+        }
+
+        for (Point a : points) {
+
+            List<Point> potentialF = map.get("x").get(a.x);
+            List<Point> potentialE = map.get("y").get(a.y);
+
+            //G?
+            for (Point f : potentialF) {
+                if (f == a) continue;
+                for (Point e : potentialE) {
+                    if (e == a || e == f) continue;
+                    for (Point g : points) {
+                        if (g == a || g == f || g == e) continue;
+
+                        if (isRectangle(List.of(a, e, f, g))) {
+                            //Rectangle found
+                            int length = Math.abs(a.x - e.x);
+                            int width = Math.abs(a.y - f.y);
+                            int area = length * width;
+                            maxArea = Math.max(maxArea, area);
+                        }
+                    }
+                }
+            }
+
+
+        }
+
+        return maxArea;
+    }
+
+    static boolean isRectangle(List<Point> randomPoints) {
+        if (randomPoints.size() != 4) return false;
+
+        // Extract x and y coordinates
+        Set<Integer> xSet = new HashSet<>();
+        Set<Integer> ySet = new HashSet<>();
+
+        for (Point p : randomPoints) {
+            xSet.add(p.x);
+            ySet.add(p.y);
+        }
+
+        // A valid rectangle should have exactly 2 distinct x-values and 2 distinct y-values
+        return xSet.size() == 2 && ySet.size() == 2;
+    }
+
+    static int findRectWithMaxArea_(Point[] points) {
 
         //Find matching points
         final Map<Integer, Set<Integer>> graph = new HashMap<>();
@@ -65,7 +134,6 @@ public class LargestRectangleInAxis {
         return maxArea;
     }
 
-
     private static class Point {
         int x, y;
 
@@ -74,6 +142,4 @@ public class LargestRectangleInAxis {
             this.y = y;
         }
     }
-
-
 }
