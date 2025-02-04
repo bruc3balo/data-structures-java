@@ -59,11 +59,10 @@ public class LargestRectangleInAxis {
                     for (Point g : points) {
                         if (g == a || g == f || g == e) continue;
 
-                        if (isRectangle(List.of(a, e, f, g))) {
-                            //Rectangle found
-                            int length = Math.abs(a.x - e.x);
-                            int width = Math.abs(a.y - f.y);
-                            int area = length * width;
+                        List<Point> rectangle = List.of(a, e, f, g);
+
+                        if (isRectangle(rectangle)) {
+                            int area = calculateArea(rectangle);
                             maxArea = Math.max(maxArea, area);
                         }
                     }
@@ -90,6 +89,18 @@ public class LargestRectangleInAxis {
 
         // A valid rectangle should have exactly 2 distinct x-values and 2 distinct y-values
         return xSet.size() == 2 && ySet.size() == 2;
+    }
+
+    static int calculateArea(List<Point> rectangle) {
+        if (rectangle.size() != 4) return 0;
+
+        Point a = rectangle.get(0);
+        Point e = rectangle.get(1);
+        Point f = rectangle.get(2);
+
+        int length = Math.abs(a.x - e.x);
+        int width = Math.abs(a.y - f.y);
+        return length * width;
     }
 
     static int findRectWithMaxArea_(Point[] points) {
@@ -133,6 +144,38 @@ public class LargestRectangleInAxis {
         //Find Max area
         return maxArea;
     }
+
+    static int findRectWithMaxArea__(Point[] points) {
+
+        //Find matching points
+        int maxArea = 0;
+
+        // Iterate over all point groups
+        for (Point a : points) {
+
+            for (Point f : points) {
+                if (f == a) continue;
+
+                for (Point e : points) {
+                    if (e == f || e == a) continue;
+
+                    for (Point g : points) {
+                        if (g == f || g == a || g == e) continue;
+
+                        List<Point> rectangle = List.of(a, e, f, g);
+                        if (!isRectangle(rectangle)) continue;
+
+                        int area = calculateArea(rectangle);
+                        maxArea = Math.max(maxArea, area);
+                    }
+                }
+            }
+        }
+
+        //Find Max area
+        return maxArea;
+    }
+
 
     private static class Point {
         int x, y;
